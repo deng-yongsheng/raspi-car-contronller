@@ -45,6 +45,14 @@ public class GameRockerView extends View {
      * 内圆半径
      */
     private int innerCircleRadius;
+    /**
+     * 摇杆的方向，弧度，正前方为0度，左侧为负数，右侧为正数
+     */
+    public float direction = 0;
+    /**
+     * 摇杆的力度，最大值为1
+     */
+    public float strength = 0;
 
     public GameRockerView(Context context) {
         super(context);
@@ -96,8 +104,6 @@ public class GameRockerView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                handleEvent(event);
-                break;
             case MotionEvent.ACTION_MOVE:
                 handleEvent(event);
                 break;
@@ -118,18 +124,26 @@ public class GameRockerView extends View {
             //在自由域之内，触摸点实时作为内圆圆心
             innerCenterX = event.getX();
             innerCenterY = event.getY();
+            // 计算力度
+            this.strength = (float) distance / (outerCircleRadius - innerCircleRadius);
             invalidate();
         } else {
             //在自由域之外，内圆圆心在触摸点与外圆圆心的线段上
             updateInnerCircelCenter(event);
+            // 力度为最大值
+            this.strength = 1;
         }
+
+        // 计算方向
+        this.direction = (float) Math.atan2((event.getX() - viewCenterX), -(event.getY() - viewCenterY));
     }
 
     /**
      * 在自由域外更新内圆中心坐标
      */
     private void updateInnerCircelCenter(MotionEvent event) {
-        double distance = Math.sqrt(Math.pow(event.getX() - viewCenterX, 2) + Math.pow(event.getY() - viewCenterY, 2));  //当前触摸点到圆心的距离
+        //当前触摸点到圆心的距离
+        double distance = Math.sqrt(Math.pow(event.getX() - viewCenterX, 2) + Math.pow(event.getY() - viewCenterY, 2));
         int innerDistance = outerCircleRadius - innerCircleRadius;  //内圆圆心到中心点距离
         //相似三角形的性质，两个相似三角形各边比例相等得到等式
         innerCenterX = (event.getX() - viewCenterX) * innerDistance / distance + viewCenterX;
@@ -144,6 +158,10 @@ public class GameRockerView extends View {
     private void restorePosition() {
         innerCenterX = viewCenterX;
         innerCenterY = viewCenterY;
+        // 力度归零
+        this.strength = 0;
+        // 方向归零
+        this.direction = 0;
         invalidate();
     }
 
