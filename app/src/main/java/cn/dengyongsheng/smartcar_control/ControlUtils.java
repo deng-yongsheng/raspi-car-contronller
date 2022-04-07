@@ -10,9 +10,18 @@ import java.util.Enumeration;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class ControlUtils extends Thread {
+    /**
+     * 本服务的端口号
+     */
     private static final int port = 1392;
+    /**
+     * udp数据包的队列，线程安全
+     */
     public static final ArrayBlockingQueue<DatagramPacket> datagramPacketQueue = new ArrayBlockingQueue<DatagramPacket>(80);
 
+    /**
+     * 静态代码段，启动一个独立线程
+     */
     static {
         ControlUtils controlUtils = new ControlUtils();
         controlUtils.start();
@@ -40,6 +49,13 @@ public class ControlUtils extends Thread {
         return "广播地址获取失败";
     }
 
+    /**
+     * 向队列中添加一条指令
+     *
+     * @param ip              目标ip地址
+     * @param instructionBase 指令，InstructionBase派生类的对象
+     * @throws IOException
+     */
     public static void putInstrution(String ip, InstructionBase instructionBase) throws IOException {
         byte[] instructionBytes = instructionBase.toString().getBytes(StandardCharsets.UTF_8);
         DatagramPacket datagramPacket = new DatagramPacket(instructionBytes, instructionBytes.length, InetAddress.getByName(ip), port);
@@ -50,7 +66,9 @@ public class ControlUtils extends Thread {
         putInstrution("255.255.255.255", instructionBase);
     }
 
-
+    /**
+     * 重载自Thread，项目启动后开始运行
+     */
     public void run() {
         try (DatagramSocket datagramSocket = new DatagramSocket()) {
             while (true) {

@@ -5,7 +5,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 
 /**
- * 移动指令
+ * 小车行进指令
  */
 public class Move extends InstructionBase {
     public float speed;
